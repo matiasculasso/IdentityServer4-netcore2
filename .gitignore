@@ -1,0 +1,16 @@
+.vs/SS.Web.Security/v15/
+src/Api/bin/Debug/netcoreapp2.0/Api.deps.json
+src/Api/bin/
+src/Api/obj/
+src/Client/bin/
+src/Client/obj/
+src/MvcClient/obj/
+src/MvcClient/bin/Debug/netcoreapp2.0/MvcClient.runtimeconfig.json
+src/MvcClient/bin/Debug/netcoreapp2.0/MvcClient.runtimeconfig.dev.json
+src/MvcClient/bin/Debug/netcoreapp2.0/MvcClient.pdb
+src/MvcClient/bin/Debug/netcoreapp2.0/MvcClient.dll
+src/MvcClient/bin/Debug/netcoreapp2.0/MvcClient.deps.json
+src/ResourceOwnerClient/obj/
+src/ResourceOwnerClient/bin/
+src/SS.Web.Security/bin/
+src/SS.Web.Security/obj/
