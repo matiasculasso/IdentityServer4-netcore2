@@ -4,10 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using IdentityModel;
 using IdentityServer4;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using SS.Web.Security.Data;
+using SS.Web.Security.Entities;
 
 namespace SS.Web.Security.Configuration
 {
@@ -42,28 +45,54 @@ namespace SS.Web.Security.Configuration
 					options.TokenCleanupInterval = 30;
 				});
 
-			services.AddAuthentication()
-				.AddGoogle("Google", options =>
+			var serviceProvider = services.BuildServiceProvider();
+			var dbContext = serviceProvider.GetService(typeof(SSDbContext)) as SSDbContext;
+
+			var externalProviders = dbContext.ExternalIdentityProvider.ToList();
+
+			foreach (var oidcProvider in externalProviders.OfType<OpenIdConnectIdentityProvider>())
+			{
+				if (oidcProvider.AuthenticationScheme == "google")
 				{
-					options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+					services.AddAuthentication().AddGoogle(oidcProvider.AuthenticationScheme, oidcProvider.DisplayName,
+						options =>
+						{
+							options.ClientId = oidcProvider.ClientId;
+							options.ClientSecret = oidcProvider.ClientSecretName;
+							options.SignInScheme = oidcProvider.SignInScheme.Trim();
+						});
+					continue;
+				}
 
-					options.ClientId = "434483408261-55tc8n0cs4ff1fe21ea8df2o443v2iuc.apps.googleusercontent.com";
-					options.ClientSecret = "3gcoTrEDPPJ0ukn_aYYT6PWo";
-				})
-				.AddOpenIdConnect("oidc", "OpenID Connect", options =>
-				{
-					options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-					options.SignOutScheme = IdentityServerConstants.SignoutScheme;
-
-					options.Authority = "https://demo.identityserver.io/";
-					options.ClientId = "implicit";
-
-					options.TokenValidationParameters = new TokenValidationParameters
+				services.AddAuthentication().AddOpenIdConnect(oidcProvider.AuthenticationScheme, oidcProvider.DisplayName,
+					options =>
 					{
-						NameClaimType = "name",
-						RoleClaimType = "role"
-					};
-				});
+						options.GetClaimsFromUserInfoEndpoint = oidcProvider.AllowClaimsFromUserInfoEndpoint ?? false;
+						options.SignInScheme = oidcProvider.SignInScheme.Trim();
+						options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+						options.Authority = oidcProvider.Authority.Trim();
+						options.ClientId = oidcProvider.ClientId.Trim();
+						options.TokenValidationParameters = new TokenValidationParameters
+						{
+							NameClaimType = JwtClaimTypes.Name,
+							RoleClaimType = JwtClaimTypes.Role
+						};
+					});
+			}
+
+
+			var samlProviders = externalProviders.OfType<SAMLIdentityProvider>().ToList();
+			foreach (var samlProvider in samlProviders)
+			{
+				//TODO Add SAML Identity Providers 
+			}
+
+			//TODO LDAP Identity Providers
+			var ldapIdentityProviders = externalProviders.OfType<LDAPIdentityProvider>().ToList();
+			foreach (var samlProvider in samlProviders)
+			{
+				// TODO Add LDAP Identity Providers
+			}
 
 			return services;
 	    }

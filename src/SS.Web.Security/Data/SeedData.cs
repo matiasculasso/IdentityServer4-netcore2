@@ -5,6 +5,7 @@ using IdentityServer4.EntityFramework.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SS.Web.Security.Configuration;
+using SS.Web.Security.Data;
 
 namespace SS.Web.Security
 {
@@ -14,16 +15,41 @@ namespace SS.Web.Security
         {
             Console.WriteLine("Seeding database...");
 
-            using (var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
+	        Console.WriteLine("Seeding Identity Server initial data...");
+			using (var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {               
 				var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();               
                 EnsureSeedData(context);
             }
-            Console.WriteLine("Done seeding database.");
-            Console.WriteLine();
+	        Console.WriteLine("Done seeding initial data.");
+
+	        Console.WriteLine("Seeding External Identity Providers...");
+			using (var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
+	        {
+		        var ssContext = scope.ServiceProvider.GetRequiredService<SSDbContext>();
+		        EnsureSeedExternalIdps(ssContext);
+	        }
+			Console.WriteLine("Done seeding External Identity Providers...");
+
+			Console.WriteLine();
         }
 
-        private static void EnsureSeedData(ConfigurationDbContext context)
+	    private static void EnsureSeedExternalIdps(SSDbContext context)
+	    {
+		    if (context.ExternalIdentityProvider.Any())
+		    {
+			    return;
+		    }
+
+		    Console.WriteLine("OIDC External Idps being populated");
+		    foreach (var oidcProvider in IdentityServerInitialConfiguration.GetExternalProviders().ToList())
+		    {
+			    context.OpenIdConnectIdentityProvider.Add(oidcProvider);
+		    }
+		    context.SaveChanges();
+	    }
+
+		private static void EnsureSeedData(ConfigurationDbContext context)
         {
             if (!context.Clients.Any())
             {

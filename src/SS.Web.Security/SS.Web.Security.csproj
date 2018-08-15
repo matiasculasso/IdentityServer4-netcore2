@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Migrations\SS\" />
     <Folder Include="UserServices\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
