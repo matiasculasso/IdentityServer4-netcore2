@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SS.Web.Security.Configuration;
+using SS.Web.Security.Data;
+using System.Reflection;
 
 namespace SS.Web.Security
 {
@@ -30,7 +32,11 @@ namespace SS.Web.Security
 			services.AddMvc();
 			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-			var connectionString = Configuration.GetConnectionString("DefaultConnection");		
+			var connectionString = Configuration.GetConnectionString("DefaultConnection");
+			var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
+			services.AddDbContext<SSDbContext>(options => options.UseSqlServer(connectionString, b => b.MigrationsAssembly(migrationsAssembly)));
+				
 			services.ConfigureIdentityServer(connectionString, _appSettings);
 		}
 
@@ -65,6 +71,9 @@ namespace SS.Web.Security
 
 				var persistedGrantDbContext = serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
 				persistedGrantDbContext.Database.Migrate();
+
+				var ssGrantDbContext = serviceScope.ServiceProvider.GetRequiredService<SSDbContext>();
+				ssGrantDbContext.Database.Migrate();
 			}
 		}
 	}

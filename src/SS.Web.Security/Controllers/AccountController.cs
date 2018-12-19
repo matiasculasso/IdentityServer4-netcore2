@@ -321,7 +321,7 @@ namespace SS.Web.Security.Controllers
             {
                 AllowRememberLogin = AccountOptions.AllowRememberLogin,
                 EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
-                ReturnUrl = returnUrl,
+                ReturnUrl = context?.RedirectUri,
                 Username = context?.LoginHint,
                 ExternalProviders = providers.ToArray()
             };

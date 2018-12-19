@@ -3,6 +3,7 @@ using System.Security.Claims;
 using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
+using SS.Web.Security.Entities;
 
 namespace SS.Web.Security.Configuration
 {
@@ -120,5 +121,25 @@ namespace SS.Web.Security.Configuration
                 }
             };
         }
+
+		public static List<OpenIdConnectIdentityProvider> GetExternalProviders ()
+		{
+			return new List<OpenIdConnectIdentityProvider>
+			{
+				new OpenIdConnectIdentityProvider("oidc", "demo identity server")
+				{
+					ClientId = "implicit",
+					Authority = "https://demo.identityserver.io/",
+					SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme,
+					AllowClaimsFromUserInfoEndpoint = true,
+				},
+				new OpenIdConnectIdentityProvider("google", "Google Authentication")
+				{
+					SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme,
+					ClientId = "434483408261-55tc8n0cs4ff1fe21ea8df2o443v2iuc.apps.googleusercontent.com",
+					ClientSecretName = "3gcoTrEDPPJ0ukn_aYYT6PWo"
+				}
+			};
+		}
     }
 }
