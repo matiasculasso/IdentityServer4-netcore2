@@ -14,3 +14,4 @@ src/ResourceOwnerClient/obj/
 src/ResourceOwnerClient/bin/
 src/SS.Web.Security/bin/
 src/SS.Web.Security/obj/
+.vs/SS.Web.Security/DesignTimeBuild/.dtbcache
